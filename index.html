@@ -1234,7 +1234,7 @@ function wire(){
     const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
-    a.download='uws-apartment-ledger.json'; a.click();
+    a.download='places.json'; a.click();
     URL.revokeObjectURL(a.href);
   };
   document.querySelectorAll('#basemaps button').forEach(b=>{
