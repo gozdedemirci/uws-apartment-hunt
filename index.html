@@ -1,0 +1,1276 @@
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --ink:#121A16;
+  --ink-2:#182420;
+  --ivy:#1E332B;
+  --ivy-line:#2C4739;
+  --brass:#B4914A;
+  --brass-lift:#D9B86C;
+  --verdigris:#5A9484;
+  --oxblood:#8E3527;
+  --limestone:#E9E4D8;
+  --limestone-dim:#9AA39B;
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --data:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:2px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  background:var(--ink);color:var(--limestone);
+  font-family:var(--body);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;overflow:hidden;
+}
+button{font-family:inherit;font-size:inherit;color:inherit;background:none;border:none;cursor:pointer}
+:focus-visible{outline:2px solid var(--brass-lift);outline-offset:2px}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:var(--ink)}
+::-webkit-scrollbar-thumb{background:var(--ivy-line);border-radius:9px}
+::-webkit-scrollbar-thumb:hover{background:var(--brass)}
+
+/* ---------- shell ---------- */
+#shell{display:flex;flex-direction:column;height:100vh;height:100dvh}
+
+#topbar{
+  display:flex;align-items:center;gap:16px;
+  padding:11px 18px;background:var(--ivy);
+  border-bottom:1px solid var(--ivy-line);flex:none;z-index:600;
+}
+#mark{display:flex;flex-direction:column;line-height:1.1;margin-right:auto;min-width:0}
+#mark .eyebrow{
+  font-family:var(--data);font-size:9px;font-weight:500;
+  letter-spacing:.19em;text-transform:uppercase;color:var(--brass);
+}
+#mark .wordmark{
+  font-family:var(--display);font-size:21px;font-weight:700;
+  letter-spacing:-.015em;color:var(--limestone);white-space:nowrap;
+}
+.tally{
+  font-family:var(--data);font-size:10px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--limestone-dim);
+  padding-right:16px;border-right:1px solid var(--ivy-line);
+  white-space:nowrap;
+}
+.tally b{color:var(--limestone);font-weight:500}
+
+.btn{
+  font-family:var(--data);font-size:10.5px;font-weight:500;
+  letter-spacing:.11em;text-transform:uppercase;
+  padding:8px 13px;border:1px solid var(--ivy-line);border-radius:var(--r);
+  color:var(--limestone-dim);transition:.16s;white-space:nowrap;
+}
+.btn:hover{border-color:var(--brass);color:var(--limestone)}
+.btn-primary{background:var(--brass);border-color:var(--brass);color:var(--ink)}
+.btn-primary:hover{background:var(--brass-lift);border-color:var(--brass-lift);color:var(--ink)}
+.btn-primary.arming{background:var(--brass-lift);animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.62}}
+.btn-ghost{border-color:transparent;padding:8px 9px}
+.btn-ghost:hover{border-color:var(--ivy-line)}
+.btn-danger:hover{border-color:var(--oxblood);color:#D8897C}
+
+#body{display:flex;flex:1;min-height:0;position:relative}
+
+/* ---------- panel ---------- */
+#panel{
+  position:relative;overflow:hidden;
+  width:378px;flex:none;background:var(--ink-2);
+  border-right:1px solid var(--ivy-line);
+  display:flex;flex-direction:column;min-height:0;z-index:500;
+}
+
+#controls{padding:12px 16px;border-bottom:1px solid var(--ivy-line);flex:none}
+.ctl-row{display:flex;gap:7px;align-items:center}
+.ctl-row + .ctl-row{margin-top:9px}
+.lbl{
+  font-family:var(--data);font-size:9px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--limestone-dim);flex:none;
+}
+select,input[type=text],input[type=number],input[type=date],input[type=url],textarea{
+  font-family:var(--body);font-size:13px;color:var(--limestone);
+  background:var(--ink);border:1px solid var(--ivy-line);
+  border-radius:var(--r);padding:7px 9px;width:100%;
+}
+select{cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:24px;
+  background-image:linear-gradient(45deg,transparent 50%,var(--limestone-dim) 50%),linear-gradient(135deg,var(--limestone-dim) 50%,transparent 50%);
+  background-position:calc(100% - 13px) 52%,calc(100% - 9px) 52%;
+  background-size:4px 4px,4px 4px;background-repeat:no-repeat}
+textarea{resize:vertical;min-height:66px;line-height:1.55}
+input:focus,select:focus,textarea:focus{border-color:var(--brass);outline:none}
+input::placeholder,textarea::placeholder{color:#5F6A62}
+input[type=range]{-webkit-appearance:none;appearance:none;background:none;height:18px;padding:0;border:none;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--ivy-line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;background:var(--brass);border-radius:50%;margin-top:-5px}
+input[type=range]::-moz-range-track{height:2px;background:var(--ivy-line)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;background:var(--brass);border:none;border-radius:50%}
+.rent-val{font-family:var(--data);font-size:11px;color:var(--brass);flex:none;min-width:62px;text-align:right}
+
+/* ---------- list ---------- */
+#list{flex:1;overflow-y:auto;min-height:0}
+.card{
+  display:flex;gap:12px;padding:13px 16px;
+  border-bottom:1px solid rgba(44,71,57,.5);
+  cursor:pointer;transition:background .14s;position:relative;
+}
+.card:hover{background:var(--ivy)}
+.card.sel{background:var(--ivy)}
+.card.sel::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--brass)}
+.card.passed .thumb{filter:grayscale(1);opacity:.5}
+.card.passed .c-name{color:var(--limestone-dim)}
+.thumb{
+  width:62px;height:62px;flex:none;border-radius:var(--r);
+  background:var(--ivy) center/cover no-repeat;
+  border:1px solid var(--ivy-line);
+}
+.thumb.empty{display:flex;align-items:center;justify-content:center;
+  font-family:var(--data);font-size:8px;letter-spacing:.1em;color:#4E574F;text-align:center}
+.c-main{flex:1;min-width:0}
+.c-top{display:flex;align-items:baseline;gap:7px}
+.c-idx{font-family:var(--data);font-size:9px;color:var(--brass);letter-spacing:.09em;flex:none}
+.c-name{
+  font-family:var(--display);font-size:15.5px;font-weight:700;letter-spacing:-.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.c-addr{font-size:11.5px;color:var(--limestone-dim);margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-figs{display:flex;align-items:center;gap:9px;margin-top:6px;flex-wrap:wrap}
+.fig{font-family:var(--data);font-size:11.5px;font-weight:500}
+.fig.rent{color:var(--brass)}
+.fig.muted{color:var(--limestone-dim);font-weight:400}
+.keys{display:inline-flex;gap:1.5px;align-items:center}
+.keys svg{width:10px;height:10px;display:block}
+.dot{width:5px;height:5px;border-radius:50%;flex:none}
+.st-favorite{background:var(--brass)}
+.st-considering{background:var(--verdigris)}
+.st-applied{background:#7EA8C4}
+.st-passed{background:var(--oxblood)}
+
+.empty-state{padding:44px 26px;text-align:center;color:var(--limestone-dim)}
+.empty-state h3{font-family:var(--display);font-size:18px;font-weight:700;color:var(--limestone);margin:0 0 7px}
+.empty-state p{font-size:12.5px;margin:0;line-height:1.6}
+
+/* ---------- detail ---------- */
+#detail{
+  position:absolute;inset:0;background:var(--ink-2);
+  display:flex;flex-direction:column;z-index:20;
+  transform:translateX(-101%);transition:transform .24s cubic-bezier(.4,0,.2,1);
+}
+#detail.open{transform:translateX(0)}
+.d-head{display:flex;align-items:center;gap:8px;padding:10px 14px;
+  border-bottom:1px solid var(--ivy-line);flex:none}
+.d-scroll{flex:1;overflow-y:auto;min-height:0}
+.gallery{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;background:var(--ink)}
+.gallery img{width:100%;flex:none;scroll-snap-align:center;
+  aspect-ratio:4/3;object-fit:cover;display:block}
+.d-pad{padding:17px}
+.d-idx{font-family:var(--data);font-size:9.5px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--brass)}
+.d-name{font-family:var(--display);font-size:26px;font-weight:700;
+  line-height:1.12;letter-spacing:-.02em;margin:5px 0 3px}
+.d-addr{font-size:12.5px;color:var(--limestone-dim)}
+.d-verdict{
+  font-family:var(--display);font-size:15px;font-style:italic;line-height:1.5;
+  color:var(--brass-lift);border-left:2px solid var(--brass);
+  padding:1px 0 1px 12px;margin:15px 0;
+}
+.d-keys{display:flex;align-items:center;gap:9px;margin-top:13px}
+.d-keys .keys svg{width:15px;height:15px}
+.tag{
+  font-family:var(--data);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  padding:3px 7px;border-radius:var(--r);border:1px solid;
+}
+.tag.favorite{color:var(--brass);border-color:var(--brass)}
+.tag.considering{color:var(--verdigris);border-color:var(--verdigris)}
+.tag.applied{color:#7EA8C4;border-color:#7EA8C4}
+.tag.passed{color:#C4776A;border-color:var(--oxblood)}
+
+.hr{height:1px;background:var(--ivy-line);margin:17px 0}
+.links{display:flex;flex-direction:column;gap:9px}
+.links a{
+  font-family:var(--data);font-size:10.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--brass);text-decoration:none;
+  padding:9px 11px;border:1px solid var(--ivy-line);border-radius:var(--r);transition:.15s;
+}
+.links a:hover{border-color:var(--brass);background:rgba(180,145,74,.09);color:var(--brass-lift)}
+.sect-h{font-family:var(--data);font-size:9px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--limestone-dim);margin:0 0 10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px 15px}
+.spec .k{font-family:var(--data);font-size:8.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--limestone-dim);display:block;margin-bottom:2px}
+.spec .v{font-family:var(--data);font-size:13.5px;font-weight:500}
+.spec .v.txt{font-family:var(--body);font-size:13px;font-weight:400;line-height:1.45}
+.spec .v.na{color:#5A635B;font-weight:400}
+.report{font-size:13.5px;line-height:1.68;white-space:pre-wrap}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:17px}
+.pc ul{list-style:none;margin:0;padding:0}
+.pc li{font-size:12.5px;line-height:1.45;padding-left:14px;position:relative;margin-bottom:6px}
+.pc li::before{position:absolute;left:0;top:0;font-family:var(--data);font-size:11px}
+.pros li::before{content:"+";color:var(--verdigris)}
+.cons li::before{content:"–";color:#C4776A}
+
+/* ---------- map ---------- */
+#map{flex:1;background:#39423C;z-index:1}
+#map.picking{cursor:crosshair}
+.leaflet-container{background:#39423C;font-family:var(--body)}
+.leaflet-control-zoom a{
+  background:var(--ivy)!important;color:var(--limestone)!important;
+  border-color:var(--ivy-line)!important;font-weight:400!important;
+}
+.leaflet-control-zoom a:hover{background:var(--ivy-line)!important;color:var(--brass-lift)!important}
+.leaflet-control-attribution{
+  background:rgba(18,26,22,.86)!important;color:#6E776F!important;font-size:9px!important;
+}
+.leaflet-control-attribution a{color:#8B9490!important}
+
+/* basemap switcher */
+#basemaps{display:flex;border:1px solid var(--ivy-line);border-radius:var(--r);overflow:hidden;flex:none}
+#basemaps button{
+  font-family:var(--data);font-size:9.5px;font-weight:500;
+  letter-spacing:.11em;text-transform:uppercase;
+  padding:8px 11px;color:var(--limestone-dim);transition:.15s;
+}
+#basemaps button + button{border-left:1px solid var(--ivy-line)}
+#basemaps button:hover{color:var(--limestone);background:rgba(180,145,74,.1)}
+#basemaps button.on{background:var(--brass);color:var(--ink)}
+
+#tile-warn{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:var(--ivy);border:1px solid var(--oxblood);border-radius:var(--r);
+  padding:15px 19px;max-width:290px;text-align:center;z-index:440;display:none;
+  box-shadow:0 12px 34px rgba(0,0,0,.55);
+}
+#tile-warn.on{display:block}
+#tile-warn p{margin:0 0 10px;font-size:12.5px;line-height:1.5;color:var(--limestone)}
+
+#picking-note{
+  position:absolute;top:15px;left:50%;transform:translateX(-50%);
+  background:var(--brass);color:var(--ink);
+  font-family:var(--data);font-size:10.5px;font-weight:700;
+  letter-spacing:.11em;text-transform:uppercase;
+  padding:9px 17px;border-radius:var(--r);z-index:450;
+  display:none;box-shadow:0 6px 22px rgba(0,0,0,.5);
+}
+#picking-note.on{display:block}
+
+/* photo pins — the signature */
+.pin-wrap{background:none;border:none}
+.pin{position:relative;width:50px;height:58px;transition:transform .17s cubic-bezier(.34,1.4,.64,1)}
+.pin:hover{transform:translateY(-5px) scale(1.09);z-index:999}
+.pin-frame{
+  width:50px;height:50px;border:2px solid var(--brass);border-radius:var(--r);
+  background:var(--ivy) center/cover no-repeat;overflow:hidden;
+  box-shadow:0 0 0 1.5px var(--ink),0 4px 14px rgba(0,0,0,.5);
+}
+.pin-frame.no-photo{display:flex;align-items:center;justify-content:center;
+  font-family:var(--data);font-size:15px;font-weight:700;color:var(--brass)}
+.pin-stem{
+  position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+  width:1px;height:9px;background:var(--brass);
+}
+.pin-stem::after{
+  content:"";position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);
+  width:5px;height:5px;border-radius:50%;background:var(--brass);
+}
+.pin[data-st=considering] .pin-frame{border-color:var(--verdigris)}
+.pin[data-st=considering] .pin-stem,.pin[data-st=considering] .pin-stem::after{background:var(--verdigris)}
+.pin[data-st=applied] .pin-frame{border-color:#7EA8C4}
+.pin[data-st=applied] .pin-stem,.pin[data-st=applied] .pin-stem::after{background:#7EA8C4}
+.pin[data-st=passed] .pin-frame{border-color:#5C6660;filter:grayscale(1);opacity:.52}
+.pin[data-st=passed] .pin-stem,.pin[data-st=passed] .pin-stem::after{background:#5C6660}
+.pin.active .pin-frame{border-width:3px;box-shadow:0 0 0 4px rgba(180,145,74,.24),0 4px 16px rgba(0,0,0,.6)}
+
+/* subway */
+.sub-dot{background:none;border:none}
+.sub-dot i{
+  display:block;width:8px;height:8px;border-radius:50%;
+  border:1.5px solid var(--ink);box-sizing:content-box;
+}
+.sub-123 i{background:#EE352E}
+.sub-bc i{background:#FF6319}
+
+/* hover card */
+.leaflet-tooltip.aptip{
+  background:var(--ivy);border:1px solid var(--brass);border-radius:var(--r);
+  box-shadow:0 10px 30px rgba(0,0,0,.62);padding:0;color:var(--limestone);
+  width:216px;white-space:normal;overflow:hidden;
+}
+.leaflet-tooltip.aptip::before{border-top-color:var(--brass)!important}
+.tip-img{width:100%;height:112px;object-fit:cover;display:block;background:var(--ink)}
+.tip-b{padding:10px 12px}
+.tip-name{font-family:var(--display);font-size:14.5px;font-weight:700;line-height:1.2}
+.tip-figs{display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap}
+.tip-v{font-size:11.5px;font-style:italic;color:var(--brass-lift);
+  line-height:1.42;margin-top:7px;padding-top:7px;border-top:1px solid var(--ivy-line)}
+.tip-sub{font-family:var(--data);font-size:9.5px;color:var(--limestone-dim);margin-top:6px}
+
+/* ---------- modal ---------- */
+#scrim{position:fixed;inset:0;background:rgba(8,12,10,.76);z-index:900;
+  display:none;align-items:flex-start;justify-content:center;padding:26px 16px;overflow-y:auto}
+#scrim.on{display:flex}
+#modal{
+  background:var(--ink-2);border:1px solid var(--ivy-line);border-radius:var(--r);
+  width:100%;max-width:600px;box-shadow:0 26px 70px rgba(0,0,0,.62);
+}
+.m-head{display:flex;align-items:center;gap:10px;padding:15px 19px;
+  border-bottom:1px solid var(--ivy-line);position:sticky;top:0;background:var(--ink-2);z-index:2}
+.m-title{font-family:var(--display);font-size:19px;font-weight:700;margin-right:auto}
+.m-body{padding:19px}
+fieldset{border:none;padding:0;margin:0 0 21px}
+legend{font-family:var(--data);font-size:9px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--brass);padding:0 0 11px}
+.f-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f-grid.three{grid-template-columns:1fr 1fr 1fr}
+.f{display:flex;flex-direction:column;gap:5px}
+.f.wide{grid-column:1/-1}
+.f > label{font-family:var(--data);font-size:8.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--limestone-dim)}
+.hint{font-size:11px;color:#6C756D;line-height:1.45}
+.keypick{display:flex;gap:4px;align-items:center}
+.keypick button{padding:3px;border-radius:var(--r);line-height:0}
+.keypick svg{width:20px;height:20px;display:block}
+.photo-strip{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.ph{position:relative;width:66px;height:66px;border-radius:var(--r);
+  background:var(--ivy) center/cover no-repeat;border:1px solid var(--ivy-line)}
+.ph button{position:absolute;top:-6px;right:-6px;width:19px;height:19px;
+  border-radius:50%;background:var(--oxblood);color:#fff;font-size:12px;
+  line-height:17px;text-align:center;border:1px solid var(--ink)}
+.pin-status{font-family:var(--data);font-size:10.5px;padding:9px 11px;
+  border:1px dashed var(--ivy-line);border-radius:var(--r);color:var(--limestone-dim)}
+.pin-status.set{border-style:solid;border-color:var(--verdigris);color:var(--limestone)}
+.m-foot{display:flex;gap:9px;align-items:center;padding:15px 19px;
+  border-top:1px solid var(--ivy-line);position:sticky;bottom:0;background:var(--ink-2)}
+.m-foot .grow{margin-right:auto}
+
+#toast{
+  position:fixed;bottom:22px;left:50%;transform:translate(-50%,80px);
+  background:var(--limestone);color:var(--ink);
+  font-family:var(--data);font-size:11px;font-weight:500;letter-spacing:.05em;
+  padding:11px 19px;border-radius:var(--r);z-index:1200;
+  opacity:0;transition:.22s;pointer-events:none;max-width:86vw;text-align:center;
+}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+
+#meter{padding:9px 16px;border-top:1px solid var(--ivy-line);flex:none;
+  font-family:var(--data);font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--limestone-dim);
+  display:flex;align-items:center;gap:9px}
+#meter-lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58%}
+#meter .bar{flex:1;min-width:28px;height:2px;background:var(--ivy-line);border-radius:2px;overflow:hidden}
+#meter .bar i{display:block;height:100%;background:var(--brass);width:0;transition:width .3s}
+
+#mobtoggle{display:none}
+
+@media (max-width:860px){
+  #body{flex-direction:column}
+  #panel{width:100%;flex:1;border-right:none;border-bottom:1px solid var(--ivy-line)}
+  #map{flex:none;height:46vh;order:-1}
+  #mobtoggle{display:inline-block}
+  #panel.hidden{display:none}
+  #panel.hidden ~ #map,#map.full{flex:1;height:auto}
+  .tally{display:none}
+  #mark .wordmark{font-size:17px}
+  .f-grid,.f-grid.three,.grid,.pc{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+
+<div id="shell">
+  <div id="topbar">
+    <div id="mark">
+      <span class="eyebrow">Upper West Side · 59th to 110th</span>
+      <span class="wordmark">The Apartment Ledger</span>
+    </div>
+    <div class="tally" id="tally"></div>
+    <div id="basemaps">
+      <button data-bm="streets" class="on">Streets</button>
+      <button data-bm="satellite">Satellite</button>
+      <button data-bm="dark">Dark</button>
+    </div>
+    <button class="btn" id="mobtoggle">List</button>
+    <button class="btn" id="btn-export" title="Download all entries as JSON">Export</button>
+    <button class="btn btn-primary" id="btn-add">+ Add a place</button>
+  </div>
+
+  <div id="body">
+    <div id="panel">
+      <div id="controls">
+        <div class="ctl-row">
+          <span class="lbl">Sort</span>
+          <select id="sort">
+            <option value="visit">Visit order</option>
+            <option value="rent-asc">Rent, low to high</option>
+            <option value="rent-desc">Rent, high to low</option>
+            <option value="rating">Rating</option>
+            <option value="subway">Closest to subway</option>
+            <option value="sqft">Biggest</option>
+          </select>
+          <select id="fstatus" style="width:auto">
+            <option value="all">All</option>
+            <option value="live">Still in play</option>
+            <option value="favorite">Favorites</option>
+            <option value="considering">Considering</option>
+            <option value="applied">Applied</option>
+            <option value="passed">Passed on</option>
+          </select>
+        </div>
+        <div class="ctl-row">
+          <span class="lbl">Max</span>
+          <input type="range" id="frent" min="1000" max="12000" step="250" value="12000">
+          <span class="rent-val" id="frent-val">Any</span>
+        </div>
+        <div class="ctl-row">
+          <span class="lbl">Beds</span>
+          <select id="fbeds">
+            <option value="0">Any</option>
+            <option value="0.5">Studio+</option>
+            <option value="1">1+</option>
+            <option value="2">2+</option>
+            <option value="3">3+</option>
+          </select>
+          <span class="lbl" style="margin-left:6px">Walk</span>
+          <select id="fsub">
+            <option value="99">Any</option>
+            <option value="5">≤5 min to train</option>
+            <option value="8">≤8 min to train</option>
+            <option value="12">≤12 min to train</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="list"></div>
+
+      <div id="meter">
+        <span id="meter-lbl">Storage</span>
+        <span class="bar"><i id="meter-fill"></i></span>
+        <span id="meter-pct">0%</span>
+      </div>
+
+      <div id="detail"></div>
+    </div>
+
+    <div id="map"></div>
+    <div id="picking-note">Click the building on the map to drop your pin · Esc to cancel</div>
+    <div id="tile-warn">
+      <p>Map tiles aren't loading from this source. Your pins and notes are all safe.</p>
+      <button class="btn btn-primary" id="tw-try">Try another source</button>
+    </div>
+  </div>
+</div>
+
+<div id="scrim"><div id="modal"></div></div>
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* ============================================================
+   The Apartment Ledger — Upper West Side
+   Data lives in shared artifact storage: everyone with the link
+   sees the same entries and can add to them.
+   ============================================================ */
+
+const KEY = 'uws-apartment-ledger:v1';
+const MAXBYTES = 5 * 1024 * 1024;
+
+let state = { places: [] };
+let map, markerLayer, markers = {}, selectedId = null;
+let picking = false, draft = null;
+
+/* ---------- UWS subway stations ---------- */
+const STATIONS = [
+  {n:'59 St–Columbus Circle', l:'123', lat:40.7681, lng:-73.9819},
+  {n:'66 St–Lincoln Center',  l:'123', lat:40.7736, lng:-73.9821},
+  {n:'72 St',                 l:'123', lat:40.7784, lng:-73.9819},
+  {n:'79 St',                 l:'123', lat:40.7838, lng:-73.9797},
+  {n:'86 St',                 l:'123', lat:40.7887, lng:-73.9762},
+  {n:'96 St',                 l:'123', lat:40.7940, lng:-73.9723},
+  {n:'103 St',                l:'123', lat:40.7992, lng:-73.9684},
+  {n:'Cathedral Pkwy–110 St', l:'123', lat:40.8039, lng:-73.9666},
+  {n:'72 St',                 l:'bc',  lat:40.7757, lng:-73.9762},
+  {n:'81 St–Museum',          l:'bc',  lat:40.7814, lng:-73.9720},
+  {n:'86 St',                 l:'bc',  lat:40.7855, lng:-73.9685},
+  {n:'96 St',                 l:'bc',  lat:40.7915, lng:-73.9645},
+  {n:'103 St',                l:'bc',  lat:40.7961, lng:-73.9613},
+  {n:'Cathedral Pkwy–110 St', l:'bc',  lat:40.8005, lng:-73.9581}
+];
+const LINE_LABEL = {'123':'1/2/3','bc':'B/C'};
+/* park edges, as walkable boundary lines */
+const CENTRAL_PK = [[40.7681,-73.9819],[40.8005,-73.9581]];   // Central Park West
+const RIVERSIDE  = [[40.7730,-73.9868],[40.8040,-73.9722]];   // Riverside Drive
+
+/* ---------- geometry ---------- */
+function metersBetween(lat1,lng1,lat2,lng2){
+  const R=6371000, t=Math.PI/180;
+  const dLat=(lat2-lat1)*t, dLng=(lng2-lng1)*t;
+  const a=Math.sin(dLat/2)**2 + Math.cos(lat1*t)*Math.cos(lat2*t)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+function metersToSegment(lat,lng,a,b){
+  const k=Math.cos(lat*Math.PI/180);
+  const X=v=>v*111320*k, Y=v=>v*110540;
+  const px=X(lng),py=Y(lat), ax=X(a[1]),ay=Y(a[0]), bx=X(b[1]),by=Y(b[0]);
+  const dx=bx-ax, dy=by-ay, L=dx*dx+dy*dy;
+  let t = L ? ((px-ax)*dx+(py-ay)*dy)/L : 0;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(px-(ax+t*dx), py-(ay+t*dy));
+}
+/* 1.3x detour for the street grid, 1.35 m/s walking */
+const walkMinutes = m => Math.max(1, Math.round(m*1.3/1.35/60));
+
+function computeGeo(lat,lng){
+  let best=null;
+  for(const s of STATIONS){
+    const d=metersBetween(lat,lng,s.lat,s.lng);
+    if(!best||d<best.d) best={d,s};
+  }
+  return {
+    subwayMin: walkMinutes(best.d),
+    subwayName: best.s.n,
+    subwayLine: LINE_LABEL[best.s.l],
+    centralParkMin: walkMinutes(metersToSegment(lat,lng,CENTRAL_PK[0],CENTRAL_PK[1])),
+    riversideMin:   walkMinutes(metersToSegment(lat,lng,RIVERSIDE[0],RIVERSIDE[1]))
+  };
+}
+
+/* ---------- storage ----------
+   Two homes for the data, picked automatically:
+   - Inside Claude: shared artifact storage, so anyone with the link
+     sees the same ledger and can add to it.
+   - As a standalone .html file: this browser's own storage. Private,
+     but it only lives on this one device in this one browser.
+*/
+const HAS_ARTIFACT_STORE = typeof window.storage !== 'undefined' && window.storage;
+const STORE = HAS_ARTIFACT_STORE
+  ? {
+      shared: true,
+      label: 'Shared ledger',
+      get: () => window.storage.get(KEY, true),
+      set: v => window.storage.set(KEY, v, true)
+    }
+  : {
+      shared: false,
+      label: 'This browser only',
+      get: () => {
+        const v = localStorage.getItem(KEY);
+        if (v === null) throw new Error('nothing saved yet');
+        return Promise.resolve({ value: v });
+      },
+      set: v => { localStorage.setItem(KEY, v); return Promise.resolve({ value: v }); }
+    };
+
+async function load(){
+  try{
+    const r = await STORE.get();
+    if(r && r.value){
+      const p = JSON.parse(r.value);
+      if(p && Array.isArray(p.places)) state = p;
+    }
+  }catch(e){ /* nothing saved yet — expected on first run */ }
+  if(!Array.isArray(state.places)) state.places = [];
+}
+async function save(){
+  const json = JSON.stringify(state);
+  if(json.length > MAXBYTES*0.97){
+    toast('Too large to save. Remove a photo or two first.');
+    return false;
+  }
+  try{
+    const r = await STORE.set(json);
+    if(!r){ toast('Save failed. Try again.'); return false; }
+    updateMeter();
+    return true;
+  }catch(e){
+    toast('Save failed — storage is full. Remove some photos.');
+    return false;
+  }
+}
+function updateMeter(){
+  const bytes = JSON.stringify(state).length;
+  const pct = Math.min(100, Math.round(bytes/MAXBYTES*100));
+  document.getElementById('meter-fill').style.width = pct+'%';
+  document.getElementById('meter-pct').textContent = pct+'%';
+  const n = state.places.reduce((s,p)=>s+(p.photos?p.photos.length:0),0);
+  document.getElementById('meter-lbl').textContent =
+    STORE.label + ' · ' + n + ' photo' + (n===1?'':'s');
+  document.getElementById('meter-lbl').title = STORE.shared
+    ? 'Saved in shared storage — everyone with this link sees the same entries.'
+    : 'Saved in this browser only. Use Export to back it up.';
+}
+
+/* ---------- helpers ---------- */
+const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => (n||n===0) ? '$'+Number(n).toLocaleString('en-US') : null;
+const bedLabel = b => b===0||b==='0' ? 'Studio' : (b ? b+' bed' : null);
+function keysSVG(rating){
+  let out='';
+  for(let i=1;i<=5;i++){
+    const on = i <= (rating||0);
+    out += `<svg viewBox="0 0 24 24" fill="none" stroke="${on?'#B4914A':'#4E574F'}" stroke-width="1.9"
+      stroke-linecap="round" aria-hidden="true">
+      <circle cx="8" cy="8" r="4.4" ${on?'fill="#B4914A"':''}/>
+      <path d="M11.2 11.2 L20 20"/><path d="M16 16 L13.6 18.4"/><path d="M18.4 18.4 L16.4 20.4"/></svg>`;
+  }
+  return `<span class="keys">${out}</span>`;
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('on');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('on'),3000);
+}
+function visitIndex(p){
+  const ord=[...state.places].sort((a,b)=>
+    (a.visitDate||a.addedAt||'').localeCompare(b.visitDate||b.addedAt||''));
+  return String(ord.findIndex(x=>x.id===p.id)+1).padStart(2,'0');
+}
+
+/* ---------- map ---------- */
+const BASEMAPS = {
+  streets: {
+    url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attr:'&copy; OpenStreetMap contributors', max:19
+  },
+  satellite: {
+    url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attr:'Esri, Maxar, Earthstar Geographics', max:19,
+    labels:'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'
+  },
+  dark: {
+    url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    subdomains:'abcd', attr:'&copy; OpenStreetMap &copy; CARTO', max:20
+  }
+};
+const BM_ORDER = ['streets','satellite','dark'];
+let baseLayer = null, labelLayer = null, currentBM = null, autoTries = 0;
+
+function setBasemap(key, isAuto){
+  const cfg = BASEMAPS[key];
+  if(!cfg) return;
+  currentBM = key;
+  document.querySelectorAll('#basemaps button').forEach(b=>
+    b.classList.toggle('on', b.dataset.bm === key));
+  if(baseLayer) map.removeLayer(baseLayer);
+  if(labelLayer){ map.removeLayer(labelLayer); labelLayer = null; }
+  document.getElementById('tile-warn').classList.remove('on');
+
+  let loaded = 0, errored = 0;
+  baseLayer = L.tileLayer(cfg.url, {
+    subdomains: cfg.subdomains || 'abc',
+    maxZoom: cfg.max, maxNativeZoom: cfg.max,
+    attribution: cfg.attr, crossOrigin: true
+  });
+  baseLayer.on('tileload', ()=>{ loaded++; });
+  baseLayer.on('tileerror', ()=>{ errored++; });
+  baseLayer.addTo(map);
+
+  if(cfg.labels){
+    labelLayer = L.tileLayer(cfg.labels, {maxZoom:cfg.max, maxNativeZoom:cfg.max, opacity:.9}).addTo(map);
+  }
+
+  /* if nothing rendered after a beat, this source is blocked — move on */
+  clearTimeout(setBasemap._t);
+  setBasemap._t = setTimeout(()=>{
+    if(loaded > 0 || errored === 0) return;
+    const next = BM_ORDER[(BM_ORDER.indexOf(key)+1) % BM_ORDER.length];
+    if(autoTries < 2){
+      autoTries++;
+      toast('That map source is blocked — switching to '+next);
+      setBasemap(next, true);
+    } else {
+      document.getElementById('tile-warn').classList.add('on');
+    }
+  }, 4500);
+
+  if(!isAuto) autoTries = 0;
+}
+
+function initMap(){
+  map = L.map('map', {
+    center:[40.7855,-73.9750], zoom:14, zoomControl:true,
+    minZoom:11, maxZoom:19, attributionControl:true
+  });
+  setBasemap('streets');
+
+  const subLayer = L.layerGroup().addTo(map);
+  STATIONS.forEach(s=>{
+    L.marker([s.lat,s.lng],{
+      icon:L.divIcon({className:'sub-dot sub-'+s.l, html:'<i></i>', iconSize:[11,11], iconAnchor:[5.5,5.5]}),
+      interactive:true, keyboard:false
+    }).bindTooltip(`${s.n} · ${LINE_LABEL[s.l]}`,{direction:'top',offset:[0,-6]}).addTo(subLayer);
+  });
+
+  markerLayer = L.layerGroup().addTo(map);
+
+  map.on('click', e=>{
+    if(!picking) return;
+    setPicking(false);
+    draft.lat = +e.latlng.lat.toFixed(6);
+    draft.lng = +e.latlng.lng.toFixed(6);
+    Object.assign(draft, computeGeo(draft.lat, draft.lng));
+    openModal();
+  });
+}
+
+function setPicking(on){
+  picking = on;
+  document.getElementById('map').classList.toggle('picking', on);
+  document.getElementById('picking-note').classList.toggle('on', on);
+  document.getElementById('btn-add').classList.toggle('arming', on);
+  if(window.innerWidth<=860 && on){
+    document.getElementById('panel').classList.add('hidden');
+    document.getElementById('map').classList.add('full');
+    document.getElementById('mobtoggle').textContent='List';
+  }
+}
+
+function renderMarkers(){
+  markerLayer.clearLayers(); markers={};
+  visible().forEach(p=>{
+    if(typeof p.lat!=='number') return;
+    const photo = p.photos && p.photos[0];
+    const frame = photo
+      ? `<div class="pin-frame" style="background-image:url('${esc(photo)}')"></div>`
+      : `<div class="pin-frame no-photo">${visitIndex(p)}</div>`;
+    const m = L.marker([p.lat,p.lng],{
+      icon: L.divIcon({
+        className:'pin-wrap',
+        html:`<div class="pin${selectedId===p.id?' active':''}" data-st="${esc(p.status||'considering')}">
+                ${frame}<div class="pin-stem"></div></div>`,
+        iconSize:[50,58], iconAnchor:[25,58], tooltipAnchor:[0,-52]
+      }),
+      riseOnHover:true, title:p.name||'Apartment'
+    });
+    m.bindTooltip(tipHTML(p),{className:'aptip',direction:'top',opacity:1,offset:[0,-6]});
+    m.on('click',()=>select(p.id));
+    m.addTo(markerLayer);
+    markers[p.id]=m;
+  });
+}
+
+function tipHTML(p){
+  const figs=[];
+  if(p.rent) figs.push(`<span class="fig rent">${money(p.rent)}<span class="fig muted">/mo</span></span>`);
+  if(bedLabel(p.beds)) figs.push(`<span class="fig muted">${esc(bedLabel(p.beds))}</span>`);
+  if(p.sqft) figs.push(`<span class="fig muted">${esc(p.sqft)} sf</span>`);
+  return `
+    ${p.photos&&p.photos[0]?`<img class="tip-img" src="${esc(p.photos[0])}" alt="">`:''}
+    <div class="tip-b">
+      <div class="tip-name">${esc(p.name||'Untitled')}</div>
+      <div class="tip-figs">${figs.join('')}${p.rating?keysSVG(p.rating):''}</div>
+      ${p.verdict?`<div class="tip-v">${esc(p.verdict)}</div>`:''}
+      ${p.subwayMin?`<div class="tip-sub">${p.subwayMin} min to ${esc(p.subwayLine)} at ${esc(p.subwayName)}</div>`:''}
+    </div>`;
+}
+
+/* ---------- filter + sort ---------- */
+function visible(){
+  const st=document.getElementById('fstatus').value;
+  const maxRent=+document.getElementById('frent').value;
+  const minBeds=+document.getElementById('fbeds').value;
+  const maxSub=+document.getElementById('fsub').value;
+  let out=state.places.filter(p=>{
+    if(st==='live' && p.status==='passed') return false;
+    if(st!=='all' && st!=='live' && (p.status||'considering')!==st) return false;
+    if(maxRent<12000 && p.rent && +p.rent>maxRent) return false;
+    if(minBeds>0){
+      const b = p.beds===''||p.beds==null ? null : +p.beds;
+      if(minBeds===0.5){ if(b===null) return false; }
+      else if(b===null || b<minBeds) return false;
+    }
+    if(maxSub<99 && (!p.subwayMin || p.subwayMin>maxSub)) return false;
+    return true;
+  });
+  const s=document.getElementById('sort').value;
+  const num=(v,d)=>v||v===0?+v:d;
+  out.sort((a,b)=>{
+    switch(s){
+      case 'rent-asc':  return num(a.rent,1e9)-num(b.rent,1e9);
+      case 'rent-desc': return num(b.rent,-1)-num(a.rent,-1);
+      case 'rating':    return num(b.rating,0)-num(a.rating,0);
+      case 'subway':    return num(a.subwayMin,999)-num(b.subwayMin,999);
+      case 'sqft':      return num(b.sqft,-1)-num(a.sqft,-1);
+      default: return (a.visitDate||a.addedAt||'').localeCompare(b.visitDate||b.addedAt||'');
+    }
+  });
+  return out;
+}
+
+/* ---------- list ---------- */
+function renderList(){
+  const rows=visible(), el=document.getElementById('list');
+  if(!state.places.length){
+    el.innerHTML=`<div class="empty-state">
+      <h3>Nothing on the ledger yet</h3>
+      <p>Hit <strong>+ Add a place</strong>, drop a pin on the building, and write down what you actually thought while it's fresh.</p></div>`;
+  } else if(!rows.length){
+    el.innerHTML=`<div class="empty-state">
+      <h3>No matches</h3><p>Nothing here fits those filters. Loosen the rent cap or bedroom count.</p></div>`;
+  } else {
+    el.innerHTML = rows.map(p=>{
+      const figs=[];
+      if(p.rent) figs.push(`<span class="fig rent">${money(p.rent)}</span>`);
+      if(bedLabel(p.beds)) figs.push(`<span class="fig muted">${esc(bedLabel(p.beds))}</span>`);
+      if(p.sqft) figs.push(`<span class="fig muted">${esc(p.sqft)} sf</span>`);
+      if(p.subwayMin) figs.push(`<span class="fig muted">${p.subwayMin}m ${esc(p.subwayLine)}</span>`);
+      return `<div class="card ${selectedId===p.id?'sel':''} ${p.status==='passed'?'passed':''}"
+                data-id="${esc(p.id)}" role="button" tabindex="0">
+        <div class="thumb ${p.photos&&p.photos[0]?'':'empty'}"
+             ${p.photos&&p.photos[0]?`style="background-image:url('${esc(p.photos[0])}')"`:''}>
+             ${p.photos&&p.photos[0]?'':'NO<br>PHOTO'}</div>
+        <div class="c-main">
+          <div class="c-top">
+            <span class="c-idx">${visitIndex(p)}</span>
+            <span class="dot st-${esc(p.status||'considering')}"></span>
+            <span class="c-name">${esc(p.name||'Untitled')}</span>
+          </div>
+          <div class="c-addr">${esc(p.address||'No address noted')}</div>
+          <div class="c-figs">${figs.join('')}${p.rating?keysSVG(p.rating):''}</div>
+        </div></div>`;
+    }).join('');
+  }
+  el.querySelectorAll('.card').forEach(c=>{
+    const go=()=>select(c.dataset.id);
+    c.onclick=go;
+    c.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } };
+  });
+
+  const live=state.places.filter(p=>p.status!=='passed').length;
+  const rents=state.places.filter(p=>p.rent).map(p=>+p.rent);
+  const med = rents.length ? rents.sort((a,b)=>a-b)[Math.floor(rents.length/2)] : null;
+  document.getElementById('tally').innerHTML =
+    `<b>${state.places.length}</b> seen · <b>${live}</b> in play${med?` · median <b>${money(med)}</b>`:''}`;
+}
+
+/* ---------- detail ---------- */
+function select(id){
+  selectedId=id;
+  const p=state.places.find(x=>x.id===id);
+  if(!p) return;
+  renderList(); renderMarkers();
+  if(typeof p.lat==='number'){
+    map.flyTo([p.lat,p.lng], Math.max(map.getZoom(),16), {duration:.65});
+  }
+  renderDetail(p);
+  if(window.innerWidth<=860){
+    document.getElementById('panel').classList.remove('hidden');
+    document.getElementById('map').classList.remove('full');
+    document.getElementById('mobtoggle').textContent='Map';
+  }
+}
+function closeDetail(){
+  selectedId=null;
+  document.getElementById('detail').classList.remove('open');
+  renderList(); renderMarkers();
+}
+function spec(k,v,isText){
+  const has = v!==''&&v!=null;
+  return `<div class="spec"><span class="k">${esc(k)}</span>
+    <span class="v ${isText?'txt':''} ${has?'':'na'}">${has?esc(v):'—'}</span></div>`;
+}
+function renderDetail(p){
+  const d=document.getElementById('detail');
+  const st=p.status||'considering';
+  const pros=(p.pros||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const cons=(p.cons||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const dateStr = p.visitDate
+    ? new Date(p.visitDate+'T12:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+    : 'Undated';
+
+  d.innerHTML = `
+    <div class="d-head">
+      <button class="btn btn-ghost" id="d-back">&larr; All places</button>
+      <span style="margin-left:auto"></span>
+      <button class="btn btn-ghost" id="d-edit">Edit</button>
+      <button class="btn btn-ghost btn-danger" id="d-del">Delete</button>
+    </div>
+    <div class="d-scroll">
+      ${p.photos&&p.photos.length?`<div class="gallery">${p.photos.map(u=>`<img src="${esc(u)}" alt="">`).join('')}</div>`:''}
+      <div class="d-pad">
+        <div class="d-idx">Visit ${visitIndex(p)} · ${esc(dateStr)}</div>
+        <h2 class="d-name">${esc(p.name||'Untitled')}</h2>
+        <div class="d-addr">${esc(p.address||'No address noted')}</div>
+        <div class="d-keys">
+          ${keysSVG(p.rating)}
+          <span class="tag ${esc(st)}">${esc({favorite:'Favorite',considering:'Considering',applied:'Applied',passed:'Passed on'}[st]||st)}</span>
+        </div>
+        ${p.verdict?`<div class="d-verdict">${esc(p.verdict)}</div>`:''}
+
+        <div class="hr"></div>
+        <h3 class="sect-h">The numbers</h3>
+        <div class="grid">
+          ${spec('Rent', p.rent?money(p.rent)+'/mo':'')}
+          ${spec('Layout', [bedLabel(p.beds), p.baths?p.baths+' bath':null].filter(Boolean).join(' · '))}
+          ${spec('Square feet', p.sqft?p.sqft+' sf':'')}
+          ${spec('$ / sf / yr', (p.rent&&p.sqft)?'$'+(p.rent*12/p.sqft).toFixed(0):'')}
+        </div>
+
+        <div class="hr"></div>
+        <h3 class="sect-h">Light, air, noise</h3>
+        <div class="grid">
+          ${spec('Exposure', p.exposure)}
+          ${spec('Natural light', p.light)}
+          ${spec('Noise', p.noise)}
+          ${spec('Floor', p.floor)}
+        </div>
+
+        <div class="hr"></div>
+        <h3 class="sect-h">The building</h3>
+        <div class="grid">
+          ${spec('Laundry', p.laundry)}
+          ${spec('Elevator', p.elevator)}
+        </div>
+        ${p.amenities?`<div style="margin-top:11px">${spec('Amenities', p.amenities, true)}</div>`:''}
+
+        <div class="hr"></div>
+        <h3 class="sect-h">Getting around</h3>
+        <div class="grid">
+          ${spec('Nearest train', p.subwayMin?`${p.subwayMin} min · ${p.subwayLine}`:'')}
+          ${spec('Station', p.subwayName)}
+          ${spec('Central Park', p.centralParkMin?p.centralParkMin+' min':'')}
+          ${spec('Riverside Park', p.riversideMin?p.riversideMin+' min':'')}
+        </div>
+        ${p.commute?`<div style="margin-top:11px">${spec('Commute', p.commute, true)}</div>`:''}
+
+        <div class="hr"></div>
+        <h3 class="sect-h">The money terms</h3>
+        <div class="grid">
+          ${spec('Broker fee', p.brokerFee)}
+          ${spec('Move-in', p.moveIn)}
+        </div>
+        ${p.leaseTerms?`<div style="margin-top:11px">${spec('Lease terms', p.leaseTerms, true)}</div>`:''}
+
+        ${(pros.length||cons.length)?`
+          <div class="hr"></div>
+          <div class="pc">
+            <div class="pros"><h3 class="sect-h">In its favor</h3>
+              <ul>${pros.map(x=>`<li>${esc(x)}</li>`).join('')||'<li style="color:#5A635B">—</li>'}</ul></div>
+            <div class="cons"><h3 class="sect-h">Against it</h3>
+              <ul>${cons.map(x=>`<li>${esc(x)}</li>`).join('')||'<li style="color:#5A635B">—</li>'}</ul></div>
+          </div>`:''}
+
+        ${p.report?`<div class="hr"></div><h3 class="sect-h">Your report</h3>
+          <div class="report">${esc(p.report)}</div>`:''}
+
+        <div class="hr"></div>
+        <div class="links">
+          ${typeof p.lat==='number'?`
+            <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${p.lat},${p.lng}"
+               target="_blank" rel="noopener">Street View of the block &rarr;</a>
+            <a href="https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}"
+               target="_blank" rel="noopener">Open in Google Maps &rarr;</a>`:''}
+          ${p.link?`<a href="${esc(p.link)}" target="_blank" rel="noopener">View the listing &rarr;</a>`:''}
+        </div>
+      </div>
+    </div>`;
+
+  d.classList.add('open');
+  d.querySelector('#d-back').onclick = closeDetail;
+  d.querySelector('#d-edit').onclick = ()=>{ draft=JSON.parse(JSON.stringify(p)); openModal(); };
+  d.querySelector('#d-del').onclick = async ()=>{
+    if(!confirm(`Delete "${p.name||'this place'}" from the ledger? This can't be undone.`)) return;
+    state.places = state.places.filter(x=>x.id!==p.id);
+    await save(); closeDetail(); toast('Removed from the ledger');
+  };
+}
+
+/* ---------- photos ---------- */
+function compress(file, max=900, q=.62){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader(), img=new Image();
+    fr.onload=()=>{ img.src=fr.result; };
+    fr.onerror=()=>rej(new Error('read'));
+    img.onerror=()=>rej(new Error('decode'));
+    img.onload=()=>{
+      let w=img.naturalWidth, h=img.naturalHeight;
+      const long=Math.max(w,h);
+      if(long>max){ const s=max/long; w=Math.round(w*s); h=Math.round(h*s); }
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      const ctx=c.getContext('2d'); ctx.fillStyle='#121A16'; ctx.fillRect(0,0,w,h);
+      ctx.drawImage(img,0,0,w,h);
+      res(c.toDataURL('image/jpeg',q));
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
+/* ---------- modal ---------- */
+const SEL = (name,val,opts) => `<select data-f="${name}">` +
+  opts.map(o=>{const [v,l]=Array.isArray(o)?o:[o,o];
+    return `<option value="${esc(v)}" ${String(val||'')===String(v)?'selected':''}>${esc(l)}</option>`;}).join('') +
+  `</select>`;
+
+function openModal(){
+  const p = draft, isNew = !p.id;
+  const modal=document.getElementById('modal');
+  modal.innerHTML = `
+    <div class="m-head">
+      <span class="m-title">${isNew?'New entry':'Edit entry'}</span>
+      <button class="btn btn-ghost" id="m-x">Close</button>
+    </div>
+    <div class="m-body">
+      <fieldset><legend>Which place</legend>
+        <div class="f-grid">
+          <div class="f wide"><label>What you'll call it</label>
+            <input type="text" data-f="name" value="${esc(p.name||'')}"
+              placeholder="e.g. The one with the bathtub in the kitchen"></div>
+          <div class="f wide"><label>Address &amp; unit</label>
+            <input type="text" data-f="address" value="${esc(p.address||'')}"
+              placeholder="245 W 79th St, Apt 4B"></div>
+          <div class="f"><label>Date you saw it</label>
+            <input type="date" data-f="visitDate" value="${esc(p.visitDate||'')}"></div>
+          <div class="f"><label>Status</label>
+            ${SEL('status',p.status||'considering',[['considering','Considering'],['favorite','Favorite'],['applied','Applied'],['passed','Passed on']])}</div>
+          <div class="f wide"><label>Location on the map</label>
+            <div class="pin-status ${typeof p.lat==='number'?'set':''}" id="pin-status">
+              ${typeof p.lat==='number'
+                ? `Pinned · ${p.subwayMin} min walk to the ${esc(p.subwayLine)} at ${esc(p.subwayName)}`
+                : 'No pin yet — save, then use Add a place to drop one'}
+            </div></div>
+          <div class="f wide"><label>Listing link (optional)</label>
+            <input type="url" data-f="link" value="${esc(p.link||'')}" placeholder="https://streeteasy.com/..."></div>
+        </div>
+      </fieldset>
+
+      <fieldset><legend>The numbers</legend>
+        <div class="f-grid three">
+          <div class="f"><label>Rent / month</label>
+            <input type="number" data-f="rent" value="${esc(p.rent||'')}" placeholder="3900" min="0"></div>
+          <div class="f"><label>Bedrooms (0 = studio)</label>
+            <input type="number" data-f="beds" value="${esc(p.beds??'')}" placeholder="1" min="0" step="1"></div>
+          <div class="f"><label>Bathrooms</label>
+            <input type="number" data-f="baths" value="${esc(p.baths||'')}" placeholder="1" min="0" step="0.5"></div>
+          <div class="f"><label>Square feet</label>
+            <input type="number" data-f="sqft" value="${esc(p.sqft||'')}" placeholder="700" min="0"></div>
+          <div class="f"><label>Floor</label>
+            <input type="text" data-f="floor" value="${esc(p.floor||'')}" placeholder="4th of 6"></div>
+          <div class="f"><label>Your rating</label>
+            <div class="keypick" id="keypick"></div></div>
+        </div>
+      </fieldset>
+
+      <fieldset><legend>Light, air, noise</legend>
+        <div class="f-grid three">
+          <div class="f"><label>Exposure</label>
+            ${SEL('exposure',p.exposure,['','North','South','East','West','North / South','East / West','Corner'])}</div>
+          <div class="f"><label>Natural light</label>
+            ${SEL('light',p.light,['','Floods in','Good','Decent','Dim','Cave'])}</div>
+          <div class="f"><label>Noise</label>
+            ${SEL('noise',p.noise,['','Silent','Quiet','Some street noise','Loud','Unlivable'])}</div>
+        </div>
+      </fieldset>
+
+      <fieldset><legend>The building</legend>
+        <div class="f-grid">
+          <div class="f"><label>Laundry</label>
+            ${SEL('laundry',p.laundry,['','In unit','In building','Down the block','None'])}</div>
+          <div class="f"><label>Elevator</label>
+            ${SEL('elevator',p.elevator,['','Elevator','Walk-up'])}</div>
+          <div class="f wide"><label>Other amenities</label>
+            <input type="text" data-f="amenities" value="${esc(p.amenities||'')}"
+              placeholder="Doorman, roof deck, bike room, dishwasher, pets OK"></div>
+        </div>
+      </fieldset>
+
+      <fieldset><legend>Money terms</legend>
+        <div class="f-grid">
+          <div class="f"><label>Broker fee</label>
+            <input type="text" data-f="brokerFee" value="${esc(p.brokerFee||'')}" placeholder="No fee / 12% / one month"></div>
+          <div class="f"><label>Available from</label>
+            <input type="text" data-f="moveIn" value="${esc(p.moveIn||'')}" placeholder="Sept 1"></div>
+          <div class="f wide"><label>Lease terms</label>
+            <input type="text" data-f="leaseTerms" value="${esc(p.leaseTerms||'')}"
+              placeholder="12 or 24 mo, 40x rent income, guarantor OK"></div>
+          <div class="f wide"><label>Commute</label>
+            <input type="text" data-f="commute" value="${esc(p.commute||'')}"
+              placeholder="~35 min door to door to Union Square"></div>
+        </div>
+      </fieldset>
+
+      <fieldset><legend>What you thought</legend>
+        <div class="f-grid">
+          <div class="f wide"><label>One-line verdict — this shows on the map</label>
+            <input type="text" data-f="verdict" value="${esc(p.verdict||'')}"
+              placeholder="Gorgeous light, but that kitchen is a hallway"></div>
+          <div class="f"><label>In its favor (one per line)</label>
+            <textarea data-f="pros" placeholder="Real prewar details&#10;Two blocks from the 1">${esc(p.pros||'')}</textarea></div>
+          <div class="f"><label>Against it (one per line)</label>
+            <textarea data-f="cons" placeholder="Faces the airshaft&#10;No closet space">${esc(p.cons||'')}</textarea></div>
+          <div class="f wide"><label>Full report</label>
+            <textarea data-f="report" style="min-height:112px"
+              placeholder="Write it down while you still remember. What did it smell like in the lobby? Was the super around? Did the radiator clank?">${esc(p.report||'')}</textarea></div>
+        </div>
+      </fieldset>
+
+      <fieldset><legend>Photos</legend>
+        <div class="f-grid">
+          <div class="f wide">
+            <label>Upload from your phone or computer</label>
+            <input type="file" id="ph-file" accept="image/*" multiple
+              style="font-size:12px;padding:6px;border:1px dashed var(--ivy-line);border-radius:2px">
+            <span class="hint">Resized on upload so the ledger stays fast. Roughly 25–30 uploaded photos fit in total.</span>
+          </div>
+          <div class="f wide">
+            <label>Or paste an image URL from the listing</label>
+            <div style="display:flex;gap:7px">
+              <input type="url" id="ph-url" placeholder="https://photos.streeteasy.com/...">
+              <button class="btn" id="ph-add">Add</button>
+            </div>
+            <span class="hint">Linked images cost no storage, but disappear if the listing comes down.</span>
+          </div>
+        </div>
+        <div class="photo-strip" id="strip"></div>
+      </fieldset>
+    </div>
+    <div class="m-foot">
+      <span class="grow hint" id="save-hint"></span>
+      <button class="btn" id="m-cancel">Cancel</button>
+      <button class="btn btn-primary" id="m-save">${isNew?'Add to ledger':'Save changes'}</button>
+    </div>`;
+
+  document.getElementById('scrim').classList.add('on');
+  if(!draft.photos) draft.photos=[];
+  drawKeys(); drawStrip();
+
+  modal.querySelector('#m-x').onclick = closeModal;
+  modal.querySelector('#m-cancel').onclick = closeModal;
+  modal.querySelector('#m-save').onclick = saveDraft;
+
+  modal.querySelector('#ph-add').onclick = ()=>{
+    const i=modal.querySelector('#ph-url'), u=i.value.trim();
+    if(!u) return;
+    if(!/^https?:\/\//i.test(u)){ toast('That needs to start with http:// or https://'); return; }
+    draft.photos.push(u); i.value=''; drawStrip();
+  };
+  modal.querySelector('#ph-file').onchange = async e=>{
+    const files=[...e.target.files]; e.target.value='';
+    const hint=modal.querySelector('#save-hint');
+    for(const f of files){
+      if(!f.type.startsWith('image/')) continue;
+      hint.textContent='Resizing '+f.name+'…';
+      try{ draft.photos.push(await compress(f)); drawStrip(); }
+      catch(err){ toast("Couldn't read "+f.name); }
+    }
+    hint.textContent = files.length ? files.length+' photo'+(files.length>1?'s':'')+' ready' : '';
+  };
+  modal.querySelector('.m-body').scrollTop = 0;
+  setTimeout(()=>{ const n=modal.querySelector('[data-f=name]'); if(n) n.focus(); },60);
+}
+
+function drawKeys(){
+  const kp=document.getElementById('keypick'); if(!kp) return;
+  kp.innerHTML='';
+  for(let i=1;i<=5;i++){
+    const b=document.createElement('button');
+    b.type='button'; b.setAttribute('aria-label',i+' of 5');
+    b.innerHTML=keysSVG(0).match(/<svg[\s\S]*?<\/svg>/g)[0]
+      .replace(/stroke="#4E574F"/, i<=(draft.rating||0)?'stroke="#B4914A"':'stroke="#4E574F"')
+      .replace(/<circle([^/]*)\/>/, i<=(draft.rating||0)?'<circle$1 fill="#B4914A"/>':'<circle$1/>');
+    b.onclick=()=>{ draft.rating = draft.rating===i ? 0 : i; drawKeys(); };
+    kp.appendChild(b);
+  }
+}
+function drawStrip(){
+  const s=document.getElementById('strip'); if(!s) return;
+  s.innerHTML = draft.photos.map((u,i)=>
+    `<div class="ph" style="background-image:url('${esc(u)}')">
+       <button type="button" data-i="${i}" aria-label="Remove photo">&times;</button></div>`).join('');
+  s.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    draft.photos.splice(+b.dataset.i,1); drawStrip();
+  });
+}
+function closeModal(){
+  document.getElementById('scrim').classList.remove('on');
+  document.getElementById('modal').innerHTML='';
+  draft=null;
+}
+async function saveDraft(){
+  const modal=document.getElementById('modal');
+  modal.querySelectorAll('[data-f]').forEach(el=>{
+    const k=el.dataset.f;
+    let v=el.value;
+    if(['rent','beds','baths','sqft'].includes(k)) v = v===''?null:+v;
+    draft[k]=v;
+  });
+  if(!draft.name && !draft.address){ toast('Give it a name or an address first'); return; }
+  if(!draft.id){
+    draft.id = 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    draft.addedAt = new Date().toISOString();
+    state.places.push(draft);
+  } else {
+    const i=state.places.findIndex(x=>x.id===draft.id);
+    if(i>-1) state.places[i]=draft;
+  }
+  const id=draft.id;
+  const ok=await save();
+  closeModal();
+  renderList(); renderMarkers();
+  if(ok) toast('Saved to the ledger');
+  select(id);
+}
+
+/* ---------- wiring ---------- */
+function wire(){
+  document.getElementById('btn-add').onclick = ()=>{
+    if(picking){ setPicking(false); return; }
+    draft = { photos:[], status:'considering', rating:0,
+              visitDate:new Date().toISOString().slice(0,10) };
+    setPicking(true);
+    toast('Now click the building on the map');
+  };
+  document.getElementById('btn-export').onclick = ()=>{
+    const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='uws-apartment-ledger.json'; a.click();
+    URL.revokeObjectURL(a.href);
+  };
+  document.querySelectorAll('#basemaps button').forEach(b=>{
+    b.onclick = ()=>{ autoTries = 0; setBasemap(b.dataset.bm); };
+  });
+  document.getElementById('tw-try').onclick = ()=>{
+    autoTries = 0;
+    setBasemap(BM_ORDER[(BM_ORDER.indexOf(currentBM)+1) % BM_ORDER.length]);
+  };
+  document.getElementById('mobtoggle').onclick = ()=>{
+    const pn=document.getElementById('panel'), mp=document.getElementById('map');
+    const hidden=pn.classList.toggle('hidden');
+    mp.classList.toggle('full',hidden);
+    document.getElementById('mobtoggle').textContent = hidden?'List':'Map';
+    setTimeout(()=>map.invalidateSize(),260);
+  };
+  ['sort','fstatus','fbeds','fsub'].forEach(id=>{
+    document.getElementById(id).onchange = ()=>{ renderList(); renderMarkers(); };
+  });
+  const fr=document.getElementById('frent');
+  fr.oninput = ()=>{
+    const v=+fr.value;
+    document.getElementById('frent-val').textContent = v>=12000?'Any':money(v);
+    renderList(); renderMarkers();
+  };
+  document.getElementById('scrim').onclick = e=>{ if(e.target.id==='scrim') closeModal(); };
+  document.addEventListener('keydown', e=>{
+    if(e.key!=='Escape') return;
+    if(picking) setPicking(false);
+    else if(document.getElementById('scrim').classList.contains('on')) closeModal();
+    else if(selectedId) closeDetail();
+  });
+}
+
+/* ---------- go ---------- */
+(async function(){
+  initMap(); wire();
+  await load();
+  renderList(); renderMarkers(); updateMeter();
+  if(state.places.length){
+    const pts=state.places.filter(p=>typeof p.lat==='number').map(p=>[p.lat,p.lng]);
+    if(pts.length>1) map.fitBounds(pts,{padding:[70,70],maxZoom:16});
+    else if(pts.length===1) map.setView(pts[0],16);
+  }
+})();
+</script>
