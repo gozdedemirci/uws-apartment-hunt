@@ -565,14 +565,21 @@ const STORE = HAS_ARTIFACT_STORE
       set: v => { localStorage.setItem(KEY, v); return Promise.resolve({ value: v }); }
     };
 
+/* External data file, loaded fresh on every page visit. Edit this
+   file in your GitHub repo (or use Export in this app, then upload
+   the download over places.json) to update what everyone sees. */
+const DATA_FILE = 'places.json';
+
 async function load(){
   try{
-    const r = await STORE.get();
-    if(r && r.value){
-      const p = JSON.parse(r.value);
-      if(p && Array.isArray(p.places)) state = p;
+    const resp = await fetch(DATA_FILE, {cache: 'no-store'});
+    if(resp.ok){
+      const p = await resp.json();
+      if(p && Array.isArray(p.places)){
+        state = p;
+      }
     }
-  }catch(e){ /* nothing saved yet — expected on first run */ }
+  }catch(e){ /* places.json missing or unreachable — fall through */ }
   if(!Array.isArray(state.places)) state.places = [];
 }
 async function save(){
@@ -601,7 +608,7 @@ function updateMeter(){
     STORE.label + ' · ' + n + ' photo' + (n===1?'':'s');
   document.getElementById('meter-lbl').title = STORE.shared
     ? 'Saved in shared storage — everyone with this link sees the same entries.'
-    : 'Saved in this browser only. Use Export to back it up.';
+    : 'Saved in this browser only, and only until you reload. Use Export, then upload the file over places.json, to make new pins visible to everyone.';
 }
 
 /* ---------- helpers ---------- */
